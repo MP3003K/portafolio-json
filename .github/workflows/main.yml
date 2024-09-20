@@ -1,22 +1,19 @@
-# Flujo de trabajo para construir y desplegar un sitio Astro en GitHub Pages
 name: Deploy Astro Site
 
-# Definimos cuándo debe ejecutarse el flujo de trabajo
 on:
   push:
     branches:
-      - main  # Se ejecutará cuando haya un push en la rama main
+      - main
   pull_request:
     branches:
-      - main  # También en pull requests en main
-  workflow_dispatch:  # Permite la ejecución manual desde la pestaña de Actions
+      - main
+  workflow_dispatch:
   schedule:
     - cron: "0 2 * * 1-5"  # Ejecución programada todos los días de lunes a viernes a las 2:00 UTC
 
-# Definimos los trabajos (jobs) que se ejecutarán en este flujo de trabajo
 jobs:
   build:
-    runs-on: ubuntu-latest  # Usamos un entorno Ubuntu
+    runs-on: ubuntu-latest
 
     steps:
       # 1. Checkout del código fuente
@@ -27,30 +24,34 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'  # Usa la versión más reciente
+          node-version: '20.x'
 
       # 3. Instalar pnpm o npm
       - name: Install pnpm
-        run: npm install -g pnpm  # Si prefieres npm, puedes cambiar a npm install
+        run: npm install -g pnpm  # O cambia a npm si usas npm
 
-      # 4. Instalar dependencias del proyecto
+      # 4. Instalar dependencias
       - name: Install dependencies
-        run: pnpm install  # O usa npm install si no usas pnpm
+        run: pnpm install  # O npm install si no usas pnpm
 
       # 5. Construir el proyecto
       - name: Build the project
         run: pnpm build  # O npm run build si usas npm
 
-      # 6. Subir los archivos generados (artefacto de la build)
+      # 6. Verificar si se generó el directorio dist
+      - name: List build directory
+        run: ls -la ./dist  # Verifica si los archivos generados están en el directorio dist
+
+      # 7. Subir los archivos generados (artefacto de la build)
       - name: Upload artifact
-        uses: actions/upload-artifact@v4  # Usa la versión más reciente
+        uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: ./dist  # El directorio de salida generado por Astro
+          path: ./dist  # Asegúrate de que es el directorio correcto
 
   deploy:
-    runs-on: ubuntu-latest  # Ejecuta el trabajo de despliegue también en Ubuntu
-    needs: build  # Este trabajo se ejecuta solo después de que la build se haya completado
+    runs-on: ubuntu-latest
+    needs: build
 
     permissions:
       pages: write  # Permite escribir en GitHub Pages
@@ -63,9 +64,13 @@ jobs:
         with:
           name: github-pages
 
+      # Verificar los archivos descargados
+      - name: List downloaded files
+        run: ls -la ./dist  # Lista los archivos en el directorio descargado
+
       # Desplegar en GitHub Pages
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1  # No es necesario especificar "folder"
+        uses: actions/deploy-pages@v1
         with:
-          # No se debe especificar 'folder' ya que no es un parámetro válido
-          token: ${{ secrets.GITHUB_TOKEN }}  # El token de GitHub se utiliza para autenticar el despliegue
+          token: ${{ secrets.GITHUB_TOKEN }}
+          emit_telemetry: false  # Añade esto para evitar advertencias de telemetría
