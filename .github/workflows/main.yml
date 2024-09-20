@@ -20,7 +20,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar Node.js (asegúrate de que sea la misma versión que usas localmente)
+      # 2. Configurar Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,35 +30,24 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
-      # 4. Verificar versión de pnpm instalada
-      - name: Verify pnpm version
-        run: pnpm --version
-
-      # 5. Instalar dependencias
+      # 4. Instalar dependencias
       - name: Install dependencies
         run: pnpm install
 
-      # 6. Verificar dependencias instaladas
-      - name: Verify installed dependencies
-        run: pnpm list --depth=0  # Lista todas las dependencias instaladas
-
-      # 7. Construir el proyecto con depuración
+      # 5. Construir el proyecto
       - name: Build the project
-        run: |
-          echo "Iniciando la construcción del proyecto en GitHub Actions"
-          pnpm build --verbose || exit 1
-          echo "Construcción completada"
+        run: pnpm build
 
-      # 8. Verificar si se generó el directorio dist
+      # 6. Verificar si se generó el directorio dist
       - name: List build directory
         run: ls -la ./dist  # Verifica si los archivos generados están en el directorio dist
 
-      # 9. Subir los archivos generados (artefacto de la build)
+      # 7. Subir los archivos generados (artefacto de la build)
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: ./dist  # Asegúrate de que es el directorio correcto
+          path: ./dist  # Asegúrate de que el directorio generado se suba correctamente
 
   deploy:
     runs-on: ubuntu-latest
@@ -74,10 +63,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: github-pages
+          path: ./dist  # El directorio donde se descargan los artefactos
 
       # Verificar los archivos descargados
       - name: List downloaded files
-        run: ls -la ./dist  # Lista los archivos en el directorio descargado
+        run: ls -la ./dist  # Lista los archivos descargados para verificar que están correctos
 
       # Desplegar en GitHub Pages
       - name: Deploy to GitHub Pages
