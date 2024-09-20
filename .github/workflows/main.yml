@@ -1,37 +1,39 @@
-# Este es un flujo de trabajo básico para construir y desplegar un sitio Astro
-name: CI
+# Flujo de trabajo para construir y desplegar un sitio Astro en GitHub Pages
+name: Deploy Astro Site
 
-# Controla cuándo se ejecutará este flujo de trabajo
+# Definimos cuándo debe ejecutarse el flujo de trabajo
 on:
   push:
-    branches: 
-      - "main"  # Solo ejecuta este workflow cuando haya push en la rama main
+    branches:
+      - main  # Se ejecutará cuando haya un push en la rama main
   pull_request:
     branches:
-      - "main"  # También en pull requests en main
-  workflow_dispatch:  # También permite ejecutarlo manualmente desde la pestaña de Actions
+      - main  # También en pull requests en main
+  workflow_dispatch:  # Permite la ejecución manual desde la pestaña de Actions
+  schedule:
+    - cron: "0 2 * * 1-5"  # Ejecución programada todos los días de lunes a viernes a las 2:00 UTC
 
-# El flujo de trabajo incluye uno o más jobs
+# Definimos los trabajos (jobs) que se ejecutarán en este flujo de trabajo
 jobs:
   build:
-    runs-on: ubuntu-latest  # Utiliza un entorno de Ubuntu
+    runs-on: ubuntu-latest  # Usamos un entorno Ubuntu
 
     steps:
       # 1. Checkout del código fuente
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar Node.js
+      # 2. Configurar Node.js (actualizado a la versión 20.x)
       - name: Setup Node.js
-        uses: actions/setup-node@v4  # Usa la versión más reciente
+        uses: actions/setup-node@v4
         with:
-          node-version: '18'  # Asegúrate de usar la versión de Node.js que necesitas
+          node-version: '20.x'  # Usa la versión más reciente
 
       # 3. Instalar pnpm o npm
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: npm install -g pnpm  # Si prefieres npm, puedes cambiar a npm install
 
-      # 4. Instalar dependencias
+      # 4. Instalar dependencias del proyecto
       - name: Install dependencies
         run: pnpm install  # O usa npm install si no usas pnpm
 
@@ -39,27 +41,31 @@ jobs:
       - name: Build the project
         run: pnpm build  # O npm run build si usas npm
 
-      # 6. Subir los archivos generados por la build
+      # 6. Subir los archivos generados (artefacto de la build)
       - name: Upload artifact
-        uses: actions/upload-artifact@v4  # Actualizado a la versión 4
+        uses: actions/upload-artifact@v4  # Usa la versión más reciente
         with:
           name: github-pages
-          path: ./dist  # Este es el directorio de salida de tu build en Astro
+          path: ./dist  # El directorio de salida generado por Astro
 
   deploy:
-    runs-on: ubuntu-latest  # Despliega también en Ubuntu
-    needs: build  # Este trabajo depende de que el trabajo de build termine primero
+    runs-on: ubuntu-latest  # Ejecuta el trabajo de despliegue también en Ubuntu
+    needs: build  # Este trabajo se ejecuta solo después de que la build se haya completado
+
+    permissions:
+      pages: write  # Permite escribir en GitHub Pages
+      id-token: write  # Se asegura de que el token tenga permiso para manejar el id-token
 
     steps:
-      # Descargar el artefacto de la build
+      # Descargar los artefactos generados en la etapa de build
       - name: Download artifact
-        uses: actions/download-artifact@v4  # Usa la versión correcta y actualizada
+        uses: actions/download-artifact@v4
         with:
           name: github-pages
-          path: ./dist
 
       # Desplegar en GitHub Pages
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v1  # No es necesario especificar "folder"
         with:
-          folder: ./dist
+          # No se debe especificar 'folder' ya que no es un parámetro válido
+          token: ${{ secrets.GITHUB_TOKEN }}  # El token de GitHub se utiliza para autenticar el despliegue
