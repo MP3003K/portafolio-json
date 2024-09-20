@@ -34,9 +34,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install  # O npm install si no usas pnpm
 
-      # 5. Construir el proyecto
-      - name: Build the project
-        run: pnpm build  # O npm run build si usas npm
+      # 5. Construir el proyecto con depuración
+      - name: Build the project with debug
+        run: pnpm build --verbose  # Usa npm run build --verbose si usas npm
 
       # 6. Verificar si se generó el directorio dist
       - name: List build directory
