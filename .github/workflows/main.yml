@@ -20,29 +20,40 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Configurar Node.js (actualizado a la versión 20.x)
+      # 2. Configurar Node.js (asegúrate de que sea la misma versión que usas localmente)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: '18.x'  # O la versión que usas localmente
 
-      # 3. Instalar pnpm o npm
+      # 3. Instalar pnpm
       - name: Install pnpm
-        run: npm install -g pnpm  # O cambia a npm si usas npm
+        run: npm install -g pnpm
 
-      # 4. Instalar dependencias
+      # 4. Verificar versión de pnpm instalada
+      - name: Verify pnpm version
+        run: pnpm --version
+
+      # 5. Instalar dependencias
       - name: Install dependencies
-        run: pnpm install  # O npm install si no usas pnpm
+        run: pnpm install
 
-      # 5. Construir el proyecto con depuración
-      - name: Build the project with debug
-        run: pnpm build --verbose  # Usa npm run build --verbose si usas npm
+      # 6. Verificar dependencias instaladas
+      - name: Verify installed dependencies
+        run: pnpm list --depth=0  # Lista todas las dependencias instaladas
 
-      # 6. Verificar si se generó el directorio dist
+      # 7. Construir el proyecto con depuración
+      - name: Build the project
+        run: |
+          echo "Iniciando la construcción del proyecto en GitHub Actions"
+          pnpm build --verbose || exit 1
+          echo "Construcción completada"
+
+      # 8. Verificar si se generó el directorio dist
       - name: List build directory
         run: ls -la ./dist  # Verifica si los archivos generados están en el directorio dist
 
-      # 7. Subir los archivos generados (artefacto de la build)
+      # 9. Subir los archivos generados (artefacto de la build)
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
