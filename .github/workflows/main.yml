@@ -23,7 +23,7 @@ jobs:
 
       # 2. Configurar Node.js
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4  # Usa la versión más reciente
         with:
           node-version: '18'  # Asegúrate de usar la versión de Node.js que necesitas
 
@@ -41,8 +41,9 @@ jobs:
 
       # 6. Subir los archivos generados por la build
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-artifact@v4  # Actualizado a la versión 4
         with:
+          name: github-pages
           path: ./dist  # Este es el directorio de salida de tu build en Astro
 
   deploy:
@@ -52,8 +53,9 @@ jobs:
     steps:
       # Descargar el artefacto de la build
       - name: Download artifact
-        uses: actions/download-pages-artifact@v1
+        uses: actions/download-artifact@v4  # Usa la versión correcta y actualizada
         with:
+          name: github-pages
           path: ./dist
 
       # Desplegar en GitHub Pages
